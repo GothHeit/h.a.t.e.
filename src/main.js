@@ -247,6 +247,12 @@ window.addEventListener("keydown", (e) => {
   if (e.ctrlKey && e.key === ",") { e.preventDefault(); toggleSettings(); }
 }, true);
 
+// WebView2's right-click menu offers Back/Refresh/Print, which would wipe every tab.
+// Kept in dev for Inspect; text fields keep their cut/copy/paste menu.
+if (import.meta.env.PROD) {
+  document.addEventListener("contextmenu", (e) => { if (!e.target.closest("input")) e.preventDefault(); });
+}
+
 // ── Window controls (macOS traffic lights) ───────────────
 $("#btn-close").onclick = () => appWindow?.close();
 $("#btn-min").onclick = () => appWindow?.minimize();

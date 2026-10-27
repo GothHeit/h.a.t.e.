@@ -137,9 +137,29 @@ fn pty_kill(ptys: State<Ptys>, id: u32) {
     }
 }
 
+/// WebView2's browser shortcuts (F5/Ctrl+R reload, Ctrl+P print, Ctrl+F find…) would reload
+/// the page and drop every tab. Editing keys like Ctrl+C/V keep working.
+#[cfg(windows)]
+fn disable_browser_keys(window: &tauri::WebviewWindow) -> tauri::Result<()> {
+    use webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Settings3;
+    use windows_core::Interface;
+    window.with_webview(|webview| unsafe {
+        let settings = webview.controller().CoreWebView2().and_then(|core| core.Settings());
+        match settings.and_then(|s| s.cast::<ICoreWebView2Settings3>()) {
+            Ok(settings) => { let _ = settings.SetAreBrowserAcceleratorKeysEnabled(false); }
+            Err(e) => eprintln!("could not disable browser keys: {e}"),
+        }
+    })
+}
+
 fn main() {
     tauri::Builder::default()
         .manage(Ptys::default())
+        .setup(|_app| {
+            #[cfg(windows)]
+            disable_browser_keys(&_app.get_webview_window("main").expect("main window"))?;
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![pty_spawn, pty_write, pty_resize, pty_kill])
         .run(tauri::generate_context!())
         .expect("error while running HATE");

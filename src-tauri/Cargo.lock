@@ -1209,6 +1209,8 @@ dependencies = [
  "serde",
  "tauri",
  "tauri-build",
+ "webview2-com",
+ "windows-core",
 ]
 
 [[package]]
