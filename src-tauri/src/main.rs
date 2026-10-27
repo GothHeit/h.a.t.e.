@@ -59,6 +59,12 @@ fn pty_spawn(
     cmd.env("TERM", "xterm-256color");
     cmd.env("COLORTERM", "truecolor");
     cmd.env("TERM_PROGRAM", "HATE");
+    if cfg!(windows) {
+        // wsl.exe only passes the variables listed in WSLENV through to Linux.
+        let shared = std::env::var("WSLENV").unwrap_or_default();
+        let sep = if shared.is_empty() { "" } else { ":" };
+        cmd.env("WSLENV", format!("{shared}{sep}COLORTERM:TERM_PROGRAM"));
+    }
     if let Some(home) = home_dir() {
         cmd.cwd(home);
     }
