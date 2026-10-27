@@ -1,19 +1,24 @@
 // Hide the extra console window on Windows release builds.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
+use portable_pty::{native_pty_system, ChildKiller, CommandBuilder, MasterPty, PtySize};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::io::{Read, Write};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 /// One running shell, owned by one tab.
 struct Pty {
     writer: Box<dyn Write + Send>,
     master: Box<dyn MasterPty + Send>,
-    child: Box<dyn Child + Send + Sync>,
+    killer: Box<dyn ChildKiller + Send + Sync>,
+    /// Tells this shell apart from a later one restarted in the same tab.
+    serial: u64,
 }
+
+static SERIAL: AtomicU64 = AtomicU64::new(0);
 
 #[derive(Default)]
 struct Ptys(Mutex<HashMap<u32, Pty>>);
@@ -60,16 +65,31 @@ fn pty_spawn(
 
     let size = PtySize { rows: rows.max(1), cols: cols.max(1), pixel_width: 0, pixel_height: 0 };
     let pair = native_pty_system().openpty(size).map_err(|e| e.to_string())?;
-    let child = pair.slave.spawn_command(cmd).map_err(|e| e.to_string())?;
+    let mut child = pair.slave.spawn_command(cmd).map_err(|e| e.to_string())?;
     drop(pair.slave);
 
     let mut reader = pair.master.try_clone_reader().map_err(|e| e.to_string())?;
     let writer = pair.master.take_writer().map_err(|e| e.to_string())?;
+    let killer = child.clone_killer();
+    let serial = SERIAL.fetch_add(1, Ordering::Relaxed);
 
     // Replace any previous shell for this tab (restart).
-    if let Some(mut old) = ptys.0.lock().unwrap().insert(id, Pty { writer, master: pair.master, child }) {
-        let _ = old.child.kill();
+    if let Some(mut old) = ptys.0.lock().unwrap().insert(id, Pty { writer, master: pair.master, killer, serial }) {
+        let _ = old.killer.kill();
     }
+
+    // ConPTY keeps the output pipe open after the shell exits, so the reader below
+    // never sees EOF on its own. Wait for the shell instead, then drop its master:
+    // that closes the pseudoconsole, and the reader drains what's left and stops.
+    let waiter = app.clone();
+    std::thread::spawn(move || {
+        let _ = child.wait();
+        let ptys = waiter.state::<Ptys>();
+        let mut map = ptys.0.lock().unwrap();
+        let done = if map.get(&id).is_some_and(|p| p.serial == serial) { map.remove(&id) } else { None };
+        drop(map);
+        drop(done);
+    });
 
     std::thread::spawn(move || {
         let mut buf = [0u8; 16 * 1024];
@@ -107,7 +127,7 @@ fn pty_resize(ptys: State<Ptys>, id: u32, cols: u16, rows: u16) -> Result<(), St
 #[tauri::command]
 fn pty_kill(ptys: State<Ptys>, id: u32) {
     if let Some(mut pty) = ptys.0.lock().unwrap().remove(&id) {
-        let _ = pty.child.kill();
+        let _ = pty.killer.kill();
     }
 }
 
