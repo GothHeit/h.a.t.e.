@@ -108,13 +108,14 @@ async function newTab(profile = settings.defaultProfile) {
   term.onTitleChange((t) => { if (t) tabEl.querySelector(".name").textContent = t; });
   term.onData((data) => {
     if (!tab.alive) { if (data === "\r") restartTab(tab); return; }
-    if (IN_TAURI) invoke("pty_write", { id, data });
+    if (IN_TAURI) invoke("pty_write", { id, data }).catch(() => {});
   });
-  term.onResize(({ cols, rows }) => { if (IN_TAURI && tab.alive) invoke("pty_resize", { id, cols, rows }); });
+  term.onResize(({ cols, rows }) => { if (IN_TAURI && tab.alive) invoke("pty_resize", { id, cols, rows }).catch(() => {}); });
   term.attachCustomKeyEventHandler(handleKeys);
 
   activate(id);
   updateChrome();
+  fit.fit(); // spawn at the real size, not xterm's 80×24 default
   await startShell(tab);
   return tab;
 }
@@ -122,6 +123,9 @@ async function newTab(profile = settings.defaultProfile) {
 async function startShell(tab) {
   tab.startedAt = Date.now();
   if (!IN_TAURI) { demoOutput(tab); return; }
+  // Live before the spawn returns: ConPTY opens with a cursor-position query that
+  // xterm must be able to answer, or the shell never starts.
+  tab.alive = true;
   try {
     await invoke("pty_spawn", {
       id: tab.id,
@@ -129,8 +133,8 @@ async function startShell(tab) {
       cols: tab.term.cols,
       rows: tab.term.rows,
     });
-    tab.alive = true;
   } catch (err) {
+    tab.alive = false;
     tab.term.write(`\x1b[38;2;255;85;85m✗ Could not start "${settings.commands[tab.profile]}": ${err}\x1b[0m\r\n`);
     tab.term.write(`\x1b[38;2;98;114;164mFix the command in Settings, then press Enter to retry.\x1b[0m\r\n`);
   }
