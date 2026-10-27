@@ -154,6 +154,7 @@ fn disable_browser_keys(window: &tauri::WebviewWindow) -> tauri::Result<()> {
 
 fn main() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .manage(Ptys::default())
         .setup(|_app| {
             #[cfg(windows)]

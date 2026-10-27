@@ -1,10 +1,12 @@
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
+import { WebLinksAddon } from "@xterm/addon-web-links";
 import "@xterm/xterm/css/xterm.css";
 import "./style.css";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 const IN_TAURI = "__TAURI_INTERNALS__" in window;
 const appWindow = IN_TAURI ? getCurrentWindow() : null;
@@ -76,10 +78,20 @@ function makeTerm() {
     scrollback: 10000,
     allowProposedApi: true,
     macOptionIsMeta: true,
+    // OSC 8 hyperlinks (tools that print link text) open like plain URLs
+    linkHandler: { activate: (_e, uri) => openLink(uri) },
   });
   const fit = new FitAddon();
   term.loadAddon(fit);
+  // URLs in the output open on click, like Hyper with no activation key
+  term.loadAddon(new WebLinksAddon((_e, uri) => openLink(uri)));
   return { term, fit };
+}
+
+// Links open in the default browser.
+function openLink(uri) {
+  if (IN_TAURI) openUrl(uri).catch(() => {});
+  else window.open(uri, "_blank");
 }
 
 async function newTab(profile = settings.defaultProfile) {

@@ -35,6 +35,7 @@ You can change any shell command in **Settings → Shells**.
 | Middle-click tab | Close tab |
 | Double-click title bar | Maximize |
 | Green light | Full screen (Alt+click: maximize) |
+| Click a link | Open it in the default browser |
 
 ## Customize
 
