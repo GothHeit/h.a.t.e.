@@ -34,6 +34,7 @@ You can change any shell command in **Settings → Shells**.
 | Ctrl+, | Settings |
 | Middle-click tab | Close tab |
 | Double-click title bar | Maximize |
+| Green light | Full screen (Alt+click: maximize) |
 
 ## Customize
 

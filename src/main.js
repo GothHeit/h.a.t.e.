@@ -255,11 +255,30 @@ if (import.meta.env.PROD) {
 }
 
 // ── Window controls (macOS traffic lights) ───────────────
+// As on macOS, the green light enters full screen, and Option (Alt) turns it into zoom.
+const maxBtn = $("#btn-max");
+let fullscreen = false, altHeld = false;
+const syncGreen = () => { maxBtn.dataset.glyph = altHeld ? "zoom" : fullscreen ? "exit" : "enter"; };
+const setAlt = (on) => { altHeld = on; syncGreen(); };
+window.addEventListener("keydown", (e) => { if (e.key === "Alt") setAlt(true); }, true);
+window.addEventListener("keyup", (e) => { if (e.key === "Alt") setAlt(false); }, true);
+window.addEventListener("blur", () => setAlt(false));
+syncGreen();
+
 $("#btn-close").onclick = () => appWindow?.close();
 $("#btn-min").onclick = () => appWindow?.minimize();
-$("#btn-max").onclick = () => appWindow?.toggleMaximize();
+maxBtn.onclick = (e) => {
+  if (!appWindow) return;
+  if (e.altKey) appWindow.toggleMaximize();
+  else appWindow.setFullscreen(!fullscreen);
+};
 if (IN_TAURI) {
-  const syncMax = async () => winEl.classList.toggle("maximized", await appWindow.isMaximized());
+  const syncMax = async () => {
+    const [max, full] = await Promise.all([appWindow.isMaximized(), appWindow.isFullscreen()]);
+    fullscreen = full;
+    winEl.classList.toggle("maximized", max || full);
+    syncGreen();
+  };
   appWindow.onResized(syncMax);
   appWindow.onFocusChanged(({ payload }) => document.body.classList.toggle("blurred", !payload));
   syncMax();

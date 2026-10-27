@@ -9,9 +9,17 @@
     <div id="window">
       <header id="titlebar" data-tauri-drag-region>
         <div class="lights">
-          <button class="light close" id="btn-close" title="Close">×</button>
-          <button class="light min" id="btn-min" title="Minimize">−</button>
-          <button class="light max" id="btn-max" title="Maximize">+</button>
+          <button class="light close" id="btn-close" title="Close">
+            <svg viewBox="0 0 12 12"><path d="M3.6 3.6l4.8 4.8M8.4 3.6l-4.8 4.8" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          </button>
+          <button class="light min" id="btn-min" title="Minimize">
+            <svg viewBox="0 0 12 12"><path d="M2.8 6h6.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </button>
+          <button class="light max" id="btn-max" title="Full screen (Alt+click to maximize)">
+            <svg class="g-enter" viewBox="0 0 12 12"><path d="M3.5 3.5h3.6L3.5 7.1zM8.5 8.5H4.9l3.6-3.6z" fill="currentColor"/></svg>
+            <svg class="g-exit" viewBox="0 0 12 12"><path d="M5.3 5.3V2.3L2.3 5.3zM6.7 6.7v3l3-3z" fill="currentColor"/></svg>
+            <svg class="g-zoom" viewBox="0 0 12 12"><path d="M6 2.8v6.4M2.8 6h6.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </button>
         </div>
 
         <div id="title">H.A.T.E.</div>

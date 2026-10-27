@@ -56,18 +56,21 @@ html, body {
 .light {
   width: 12px; height: 12px;
   border-radius: 50%;
-  border: 0.5px solid rgba(0, 0, 0, 0.25);
+  border: 0.5px solid;
   padding: 0;
-  display: grid; place-items: center;
-  font: 700 10px/1 var(--ui);
-  color: transparent;
+  position: relative;
   cursor: default;
 }
-.close { background: #ff5f57; }
-.min   { background: #febc2e; }
-.max   { background: #28c840; }
-.lights:hover .light { color: rgba(0, 0, 0, 0.55); }
-body.blurred .lights:not(:hover) .light { background: rgba(255, 255, 255, 0.18); }
+/* macOS fill, ring and symbol colors; the symbols show while the group is hovered */
+.close { background: #ff5f57; border-color: #e0443e; color: #4d0000; }
+.min   { background: #febc2e; border-color: #dea123; color: #995700; }
+.max   { background: #28c840; border-color: #1aab29; color: #006500; }
+.light:active { filter: brightness(0.82); }
+.light svg { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 12px; height: 12px; opacity: 0; }
+.lights:hover .light svg { opacity: 1; }
+.max svg { display: none; }
+.max[data-glyph="enter"] .g-enter, .max[data-glyph="exit"] .g-exit, .max[data-glyph="zoom"] .g-zoom { display: block; }
+body.blurred .lights:not(:hover) .light { background: rgba(255, 255, 255, 0.18); border-color: rgba(0, 0, 0, 0.2); }
 
 #title {
   position: absolute; inset: 0;
