@@ -40,7 +40,7 @@ You can change any shell command in **Settings → Shells**.
 | What | Where |
 |---|---|
 | Name | `productName` in `src-tauri/tauri.conf.json` |
-| Icon | Replace `app-icon.png` (1024×1024), then run `npx tauri icon app-icon.png` |
+| Icon | Edit `app-icon.svg` and render it to `app-icon.png` (1024×1024), then run `npx tauri icon app-icon.png` |
 | Colors | `DRACULA` in `src/main.js`, UI colors at the top of `src/style.css` |
 | Transparency, corners, font, cursor, shells | ≡ menu → Settings. Saved automatically |
 | Shell profiles | `PROFILES` + `DEFAULTS.commands` in `src/main.js` |

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- HATE app icon: pop-art vampire lips. Render to app-icon.png, then `npx tauri icon app-icon.png`. -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+    <!-- Halftone lips: red dots on a pale pink ground, on a 45° grid -->
+    <pattern id="halftone" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="11" height="11" fill="#fbdcd9"/>
+      <circle cx="5.5" cy="5.5" r="3.9" fill="#e3252d"/>
+    </pattern>
+    <!-- Blood drop: an upside-down heart, point at (0,0), lobes reaching y=1 -->
+    <path id="drop" d="M0 0C.02 .34 .28 .5 .28 .75C.28 .9 .19 1 .12 1C.05 1 .01 .95 0 .88C-.01 .95-.05 1-.12 1C-.19 1-.28 .9-.28 .75C-.28 .5-.02 .34 0 0Z"/>
+    <path id="fangL" d="M274 150L358 150C354 200 349 235 345 262C338 305 318 350 288 394C286 350 284 305 284 268C283 230 280 190 274 150Z"/>
+    <path id="fangR" d="M503 150L591 150C586 200 581 235 577 264C560 302 532 346 497 391C503 350 509 305 512 272C511 230 508 190 503 150Z"/>
+    <clipPath id="clipL"><use href="#fangL"/></clipPath>
+    <clipPath id="clipR"><use href="#fangR"/></clipPath>
+  </defs>
+
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="#0b0a0c" filter="url(#shadow)"/>
+  <rect x="101" y="101" width="822" height="822" rx="184" fill="none" stroke="#fff" stroke-opacity="0.09" stroke-width="2"/>
+
+  <!-- Artwork drawn in the reference's own coordinates, then fitted to the tile -->
+  <g transform="translate(151 124) scale(.88)">
+    <g fill="#ee1c25">
+      <use href="#drop" transform="translate(273 412) scale(95)"/>
+      <use href="#drop" transform="translate(128 548) scale(133)"/>
+      <use href="#drop" transform="translate(148 716) scale(105)"/>
+    </g>
+
+    <!-- Fangs: white enamel, a wavy blood line, red tips -->
+    <use href="#fangL" fill="#fff"/>
+    <g clip-path="url(#clipL)">
+      <path fill="#ee1c25" d="M270 266C282 262 290 284 298 270C304 260 310 278 318 268C326 258 332 282 340 266C346 256 352 270 365 260L365 420L270 420Z"/>
+      <path fill="none" stroke="#0b0a0c" stroke-width="5" d="M270 266C282 262 290 284 298 270C304 260 310 278 318 268C326 258 332 282 340 266C346 256 352 270 365 260"/>
+    </g>
+    <use href="#fangR" fill="#fff"/>
+    <g clip-path="url(#clipR)">
+      <path fill="#ee1c25" d="M500 272C512 268 518 288 528 274C534 264 540 282 548 272C556 262 562 284 570 268C576 258 582 270 592 262L592 420L500 420Z"/>
+      <path fill="none" stroke="#0b0a0c" stroke-width="5" d="M500 272C512 268 518 288 528 274C534 264 540 282 548 272C556 262 562 284 570 268C576 258 582 270 592 262"/>
+    </g>
+
+    <g fill="url(#halftone)">
+      <!-- Upper lip: outer edge up and over the cupid's bow, then back along the mouth -->
+      <path d="M100 560C92 420 120 250 200 150C245 95 300 62 345 62C380 62 405 92 425 112C445 92 475 60 520 60C580 60 640 95 680 160C720 230 735 380 718 548C694 440 660 305 608 226C580 184 550 166 515 168C480 170 450 185 425 190C395 185 360 165 320 165C272 167 230 208 202 268C170 336 138 448 100 560Z"/>
+      <!-- Lower lip -->
+      <path d="M100 560C160 535 230 522 300 524C350 525 390 540 415 547C445 535 500 520 560 520C620 520 680 530 720 548C700 590 640 630 560 642C480 652 340 652 250 640C180 630 130 600 100 560Z"/>
+    </g>
+  </g>
+</svg>
