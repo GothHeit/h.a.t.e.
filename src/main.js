@@ -104,9 +104,14 @@ async function newTab(profile = settings.defaultProfile) {
 
   const tabEl = document.createElement("div");
   tabEl.className = "tab";
+  tabEl.dataset.id = id;
   tabEl.innerHTML = `<button class="x" title="Close tab (Ctrl+Shift+W)"><svg viewBox="0 0 10 10"><path d="M2.5 2.5l5 5M7.5 2.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></button><span class="name"></span>`;
   tabEl.querySelector(".name").textContent = p.name;
-  tabEl.addEventListener("mousedown", (e) => { if (e.button === 0 && !e.target.closest(".x")) activate(id); });
+  tabEl.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0 || e.target.closest(".x")) return;
+    activate(id);
+    dragTab(tabEl, e);
+  });
   tabEl.addEventListener("auxclick", (e) => { if (e.button === 1) closeTab(id); });
   tabEl.querySelector(".x").addEventListener("click", () => closeTab(id));
   tabsEl.appendChild(tabEl);
@@ -175,11 +180,11 @@ async function closeTab(id) {
   if (!tab) return;
   if (IN_TAURI && tab.alive) invoke("pty_kill", { id }).catch(() => {});
   tab.alive = false;
+  const ids = tabOrder();
+  const idx = ids.indexOf(id);
   tab.term.dispose();
   tab.pane.remove();
   tab.tabEl.remove();
-  const ids = [...tabs.keys()];
-  const idx = ids.indexOf(id);
   tabs.delete(id);
   if (tabs.size === 0) { if (IN_TAURI) appWindow.close(); else newTab(); return; }
   if (activeId === id) activate(ids[idx + 1] ?? ids[idx - 1]);
@@ -187,9 +192,51 @@ async function closeTab(id) {
 }
 
 function cycleTab(dir) {
-  const ids = [...tabs.keys()];
+  const ids = tabOrder();
   const i = ids.indexOf(activeId);
   activate(ids[(i + dir + ids.length) % ids.length]);
+}
+
+// Tab ids in on-screen order, which dragging can change.
+const tabOrder = () => [...tabsEl.children].map((el) => +el.dataset.id);
+
+// Drag a tab sideways to reorder it, like macOS: it follows the pointer, and the
+// others slide over once its middle passes theirs.
+function dragTab(tabEl, down) {
+  const grab = down.clientX - tabEl.getBoundingClientRect().left;
+  let dragging = false;
+  tabEl.setPointerCapture(down.pointerId);
+  const move = (e) => {
+    if (!dragging && Math.abs(e.clientX - down.clientX) < 4) return;
+    dragging = true;
+    tabEl.classList.add("dragging");
+    // The slot follows the pointer freely; only the drawn tab stays inside the strip.
+    const strip = tabsEl.getBoundingClientRect();
+    const center = e.clientX - grab + tabEl.offsetWidth / 2;
+    const left = Math.min(Math.max(e.clientX - grab, strip.left + 2), strip.right - 2 - tabEl.offsetWidth);
+    const others = [...tabsEl.children].filter((t) => t !== tabEl);
+    const next = others.find((t) => { const r = t.getBoundingClientRect(); return center < r.left + r.width / 2; }) ?? null;
+    if (tabEl.nextElementSibling !== next) {
+      const before = new Map(others.map((t) => [t, t.getBoundingClientRect().left]));
+      tabsEl.insertBefore(tabEl, next);
+      for (const [t, x] of before) {
+        const dx = x - t.getBoundingClientRect().left;
+        if (dx) t.animate([{ translate: `${dx}px` }, { translate: "0px" }], { duration: 160, easing: "ease-out" });
+      }
+    }
+    const slot = tabEl.getBoundingClientRect().left - (parseFloat(tabEl.style.translate) || 0);
+    tabEl.style.translate = `${left - slot}px`;
+  };
+  const up = () => {
+    tabEl.removeEventListener("pointermove", move);
+    tabEl.removeEventListener("pointerup", up);
+    tabEl.removeEventListener("pointercancel", up);
+    tabEl.classList.remove("dragging");
+    tabEl.style.translate = "";
+  };
+  tabEl.addEventListener("pointermove", move);
+  tabEl.addEventListener("pointerup", up);
+  tabEl.addEventListener("pointercancel", up);
 }
 
 function updateChrome() {
