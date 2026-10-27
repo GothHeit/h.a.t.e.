@@ -294,6 +294,13 @@ function handleKeys(e) {
   // Returning false lets the webview's native paste event reach xterm (no double paste).
   if (e.ctrlKey && !e.altKey && k === "v") return false;
   if (e.ctrlKey && k === "tab") { cycleTab(e.shiftKey ? -1 : 1); return false; }
+  // Ctrl+1…8 jump to that tab and Ctrl+9 to the last one (⌘1…⌘9 on macOS)
+  if (e.ctrlKey && !e.shiftKey && !e.altKey && /^Digit[1-9]$/.test(e.code)) {
+    const ids = tabOrder(), n = +e.code.slice(5);
+    const id = n === 9 ? ids.at(-1) : ids[n - 1];
+    if (id !== undefined) activate(id);
+    return false;
+  }
   if (e.ctrlKey && !e.shiftKey && k === ",") return false; // toggled by the window listener below
   if (e.ctrlKey && (k === "=" || k === "+")) { setSetting("fontSize", Math.min(32, settings.fontSize + 1)); return false; }
   if (e.ctrlKey && k === "-") { setSetting("fontSize", Math.max(8, settings.fontSize - 1)); return false; }

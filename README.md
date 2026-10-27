@@ -28,6 +28,7 @@ You can change any shell command in **Settings → Shells**.
 | Ctrl+Shift+1 / 2 / 3 | New zsh / PowerShell / CMD tab |
 | Ctrl+Shift+W | Close tab |
 | Ctrl+Tab / Ctrl+Shift+Tab | Next / previous tab |
+| Ctrl+1 … Ctrl+8 / Ctrl+9 | Go to that tab / the last tab |
 | Drag a tab | Reorder tabs |
 | Ctrl+Shift+C | Copy |
 | Ctrl+V / Ctrl+Shift+V | Paste |
