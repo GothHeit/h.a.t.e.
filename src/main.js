@@ -105,7 +105,8 @@ async function newTab(profile = settings.defaultProfile) {
   tabs.set(id, tab);
 
   term.onBell(() => { if (settings.bell) beep(); });
-  term.onTitleChange((t) => { if (t) tabEl.querySelector(".name").textContent = t; });
+  // Keep the profile name over conhost's default title (the shell's .exe path).
+  term.onTitleChange((t) => { if (t && !/^[a-z]:\\.*\.exe$/i.test(t)) tabEl.querySelector(".name").textContent = t; });
   term.onData((data) => {
     if (!tab.alive) { if (data === "\r") restartTab(tab); return; }
     if (IN_TAURI) invoke("pty_write", { id, data }).catch(() => {});
