@@ -234,17 +234,18 @@ function handleKeys(e) {
   // Returning false lets the webview's native paste event reach xterm (no double paste).
   if (e.ctrlKey && !e.altKey && k === "v") return false;
   if (e.ctrlKey && k === "tab") { cycleTab(e.shiftKey ? -1 : 1); return false; }
-  if (e.ctrlKey && !e.shiftKey && k === ",") { toggleSettings(); return false; }
+  if (e.ctrlKey && !e.shiftKey && k === ",") return false; // toggled by the window listener below
   if (e.ctrlKey && (k === "=" || k === "+")) { setSetting("fontSize", Math.min(32, settings.fontSize + 1)); return false; }
   if (e.ctrlKey && k === "-") { setSetting("fontSize", Math.max(8, settings.fontSize - 1)); return false; }
   if (e.ctrlKey && k === "0") { setSetting("fontSize", DEFAULTS.fontSize); return false; }
   return true;
 }
 window.addEventListener("keydown", (e) => {
-  // Shortcuts that should work even when the settings panel has focus
-  if (e.key === "Escape") { closeMenus(); }
+  // Shortcuts that should work even when the settings panel has focus. Capture phase,
+  // since xterm stops the keys it handles (like Escape) from bubbling up.
+  if (e.key === "Escape" && (!menu.hidden || !panel.hidden)) { e.preventDefault(); e.stopPropagation(); closeMenus(); }
   if (e.ctrlKey && e.key === ",") { e.preventDefault(); toggleSettings(); }
-});
+}, true);
 
 // ── Window controls (macOS traffic lights) ───────────────
 $("#btn-close").onclick = () => appWindow?.close();
