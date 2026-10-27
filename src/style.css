@@ -110,10 +110,6 @@ body.blurred #title { color: var(--muted); }
 }
 .tab:hover { background: rgba(255, 255, 255, 0.05); }
 .tab.active { background: rgba(68, 71, 90, 0.75); color: var(--fg); }
-.tab .icon { font-family: "JetBrainsMono Nerd Font"; font-size: 13px; width: 14px; text-align: center; flex: none; }
-.tab .icon.wsl { color: #f1fa8c; }
-.tab .icon.powershell { color: #8be9fd; }
-.tab .icon.cmd { color: #50fa7b; }
 .tab .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tab .x {
   flex: none;

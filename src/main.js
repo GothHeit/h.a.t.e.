@@ -92,7 +92,7 @@ async function newTab(profile = settings.defaultProfile) {
 
   const tabEl = document.createElement("div");
   tabEl.className = "tab";
-  tabEl.innerHTML = `<span class="icon ${profile}">${p.icon}</span><span class="name"></span><button class="x" title="Close tab (Ctrl+Shift+W)">×</button>`;
+  tabEl.innerHTML = `<span class="name"></span><button class="x" title="Close tab (Ctrl+Shift+W)">×</button>`;
   tabEl.querySelector(".name").textContent = p.name;
   tabEl.addEventListener("mousedown", (e) => { if (e.button === 0 && !e.target.closest(".x")) activate(id); });
   tabEl.addEventListener("auxclick", (e) => { if (e.button === 1) closeTab(id); });
