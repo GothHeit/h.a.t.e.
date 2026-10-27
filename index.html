@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HATE</title>
+  </head>
+  <body>
+    <div id="window">
+      <header id="titlebar" data-tauri-drag-region>
+        <div class="lights">
+          <button class="light close" id="btn-close" title="Close">×</button>
+          <button class="light min" id="btn-min" title="Minimize">−</button>
+          <button class="light max" id="btn-max" title="Maximize">+</button>
+        </div>
+
+        <div id="title">H.A.T.E.</div>
+
+        <button id="btn-menu" title="Menu">
+          <svg viewBox="0 0 16 12" width="15" height="12"><path d="M1 1h14M1 6h14M1 11h14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
+        <div id="menu" hidden></div>
+      </header>
+
+      <nav id="tabs"></nav>
+
+      <main id="panes"></main>
+
+      <aside id="settings" hidden>
+        <h2>Settings</h2>
+
+        <label>Transparency <span id="v-opacity"></span>
+          <input type="range" id="s-opacity" min="0.3" max="1" step="0.01" />
+        </label>
+
+        <label>Corner radius <span id="v-radius"></span>
+          <input type="range" id="s-radius" min="0" max="24" step="1" />
+        </label>
+
+        <label>Font
+          <input type="text" id="s-font" list="fonts" spellcheck="false" />
+          <datalist id="fonts">
+            <option value="JetBrainsMono Nerd Font"></option>
+            <option value="FiraCode Nerd Font"></option>
+            <option value="CaskaydiaCove Nerd Font"></option>
+            <option value="Hack Nerd Font"></option>
+            <option value="MesloLGS Nerd Font"></option>
+          </datalist>
+        </label>
+
+        <label>Font size <span id="v-size"></span>
+          <input type="range" id="s-size" min="10" max="24" step="1" />
+        </label>
+
+        <label>Cursor
+          <select id="s-cursor">
+            <option value="bar">Bar</option>
+            <option value="block">Block</option>
+            <option value="underline">Underline</option>
+          </select>
+        </label>
+
+        <label class="row"><input type="checkbox" id="s-blink" /> Blinking cursor</label>
+        <label class="row"><input type="checkbox" id="s-bell" /> Bell sound</label>
+
+        <h3>Shells</h3>
+        <label>Default for new tabs
+          <select id="s-default"></select>
+        </label>
+        <div id="s-profiles"></div>
+
+        <div class="actions">
+          <button id="s-reset" class="ghost">Reset defaults</button>
+        </div>
+      </aside>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
