@@ -5,6 +5,7 @@ import "@xterm/xterm/css/xterm.css";
 import "./style.css";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openUrl } from "@tauri-apps/plugin-opener";
 
@@ -258,6 +259,36 @@ if (IN_TAURI) {
     } else {
       closeTab(id);
     }
+  });
+}
+
+// ── Dropped files ────────────────────────────────────────
+// A Windows path as WSL sees it: C:\a\b → /mnt/c/a/b, \\wsl.localhost\Ubuntu\a → /a.
+function wslPath(path) {
+  const linux = path.match(/^\\\\(?:wsl\.localhost|wsl\$)\\[^\\]+(\\.*)?$/i);
+  if (linux) return (linux[1] || "/").replaceAll("\\", "/");
+  const drive = path.match(/^([a-z]):\\(.*)$/i);
+  return drive ? `/mnt/${drive[1].toLowerCase()}/${drive[2].replaceAll("\\", "/")}` : path;
+}
+
+// How each shell needs a dropped path written; plain paths stay unquoted.
+const DROP_FORMAT = {
+  wsl: (path) => {
+    const p = wslPath(path);
+    return /^[\w@%+=:,./-]+$/.test(p) ? p : `'${p.replaceAll("'", `'\\''`)}'`;
+  },
+  powershell: (path) => (/^[\w:.\\-]+$/.test(path) ? path : `'${path.replaceAll("'", "''")}'`),
+  cmd: (path) => (/^[\w:.\\-]+$/.test(path) ? path : `"${path}"`),
+};
+
+// Like macOS Terminal: the path lands in the active tab, ready to keep typing after it.
+if (IN_TAURI) {
+  getCurrentWebview().onDragDropEvent(({ payload }) => {
+    const tab = tabs.get(activeId);
+    if (payload.type !== "drop" || !payload.paths.length || !tab) return;
+    tab.term.paste(payload.paths.map(DROP_FORMAT[tab.profile]).join(" ") + " ");
+    appWindow.setFocus();
+    tab.term.focus();
   });
 }
 

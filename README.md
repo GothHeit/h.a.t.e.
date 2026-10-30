@@ -38,6 +38,7 @@ You can change any shell command in **Settings → Shells**.
 | Double-click title bar | Maximize |
 | Green light | Full screen (Alt+click: maximize) |
 | Click a link | Open it in the default browser |
+| Drop a file on the window | Insert its path in the active tab, in that shell's format |
 
 ## Customize
 
